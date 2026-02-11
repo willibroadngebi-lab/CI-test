@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Docker CI
 
 on:
   push:
@@ -7,18 +7,24 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  docker-build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Say hello
-      run: echo "Hello from CI/CD! 🚀"
+    - name: Build Docker image
+      run: docker build -t my-app:${{ github.sha }} .
 
-    - name: Show current directory
-      run: pwd
+    - name: List Docker images
+      run: docker images
 
-    - name: List files
-      run: ls -la
+    - name: Test Docker image runs
+      run: |
+        docker run -d --name test-container my-app:${{ github.sha }}
+        sleep 5
+        docker ps
+        docker logs test-container
+        docker stop test-container
+
