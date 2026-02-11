@@ -14,6 +14,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install dependencies
+      run: npm install
+
     - name: Build Docker image
       run: docker build -t willicegroup:${{ github.sha }} .
 
@@ -27,4 +30,11 @@ jobs:
         docker ps
         docker logs test-container
         docker stop test-container
+
+    - name: Health check
+      run: |
+        docker run -d -p 8080:8080 --name app my-app:${{ github.sha }}
+        sleep 10
+        curl -f http://localhost:8080/health || exit 1
+        docker stop app
 
