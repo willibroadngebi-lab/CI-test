@@ -33,7 +33,7 @@ jobs:
 
     - name: Health check
       run: |
-        docker run -d -p 8080:8080 --name app my-app:${{ github.sha }}
+        docker run -d -p 8080:8080 --name app willicegroup:${{ github.sha }}  # Corrected image name
         sleep 10
         curl -f http://localhost:8080/health || exit 1
         docker stop app
