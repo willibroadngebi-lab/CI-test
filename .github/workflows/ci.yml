@@ -11,30 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Build Docker image
-      run: docker build -t willicegroup:${{ github.sha }} .
+      - name: Build Docker image
+        run: docker build -t willicegroup:${{ github.sha }} .
 
-    - name: List Docker images
-      run: docker images
+      - name: List Docker images
+        run: docker images
 
-    - name: Test Docker image runs
-      run: |
-        docker run -d --name test-container willicegroup:${{ github.sha }}
-        sleep 5
-        docker ps
-        docker logs test-container
-        docker stop test-container
+      - name: Test Docker image runs
+        run: |
+          docker run -d --name test-container willicegroup:${{ github.sha }}
+          sleep 5
+          docker ps
+          docker logs test-container
+          docker stop test-container || true
+          docker rm test-container || true
 
-    - name: Health check
-      run: |
-        docker run -d -p 8080:8080 --name app willicegroup:${{ github.sha }}  # Corrected image name
-        sleep 10
-        curl -f http://localhost:8080/health || exit 1
-        docker stop app
+      - name: Health check
+        run: |
+          docker run -d -p 8080:8080 --name app willicegroup:${{ github.sha }}
+          sleep 10
+          curl -f http://localhost:8080/health || (docker stop app && docker rm app && exit 1)
+          docker stop app || true
+          docker rm app || true
 
